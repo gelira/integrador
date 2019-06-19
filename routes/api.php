@@ -35,4 +35,5 @@ Route::prefix('tarefa')->group(function () {
     Route::post('atualizar/{id}', 'APITarefaController@atualizar');
     Route::post('anotacoes/{id}', 'APITarefaController@anotacoes');
     Route::post('status/{id}', 'APITarefaController@status');
+    Route::get('deletar/{id}', 'APITarefaController@deletar');
 });

@@ -132,4 +132,18 @@ class APITarefaController extends Controller
             'tarefa' => $t
         ], 200);
     }
+
+    public function deletar(Request $rq, $id)
+    {
+        $t = $this->procurarTarefa($rq, $id);
+        if ($t == null)
+        {
+            return $this->tarefaNotFound();
+        }
+
+        $t->delete();
+        return response()->json([
+            'message' => 'Tarefa deletada com sucesso'
+        ], 200);
+    }
 }
