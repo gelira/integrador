@@ -37,3 +37,8 @@ Route::prefix('tarefa')->group(function () {
     Route::post('status/{id}', 'APITarefaController@status');
     Route::get('deletar/{id}', 'APITarefaController@deletar');
 });
+
+Route::prefix('lista')->group(function () {
+    Route::get('listar/{quadro_id}', 'APIListaController@listar');
+    Route::post('criar/{quadro_id}', 'APIListaController@criar');
+});
