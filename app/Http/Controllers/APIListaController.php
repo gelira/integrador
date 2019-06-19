@@ -9,10 +9,23 @@ use App\Lista;
 class APIListaController extends Controller
 {
     use BuscarQuadroTrait;
+    use BuscarTarefaTrait;
 
     public function __construct()
     {
         $this->middleware('auth:api');
+    }
+
+    private function procurarLista(Request $rq, $id)
+    {
+        return $rq->user()->listas()->where('listas.id', $id)->first();
+    }
+
+    private function listaNotFound()
+    {
+        return response()->json([
+            'message' => 'Lista não encontrada'
+        ], 404);
     }
 
     public function listar(Request $rq, $quadro_id)
@@ -51,6 +64,43 @@ class APIListaController extends Controller
         return response()->json([
             'message' => 'Lista criada com sucesso',
             'lista' => $l
+        ], 200);
+    }
+
+    public function listarTarefas(Request $rq, $id)
+    {
+        $l = $this->procurarLista($rq, $id);
+        if ($l == null)
+        {
+            return $this->listaNotFound();
+        }
+
+        return response()->json([
+            'message' => 'Tarefas da lista',
+            'tarefas' => $l->tarefas
+        ], 200);
+    }
+
+    public function addTarefa(Request $rq, $id)
+    {
+        Validator::make($rq->all(), [
+            'tarefa_id' => 'required|integer'
+        ])->validate();
+
+        $l = $this->procurarLista($rq, $id);
+        if ($l == null)
+        {
+            return $this->listaNotFound();
+        }
+
+        if ($this->procurarTarefa($rq, $rq->tarefa_id) == null)
+        {
+            return $this->tarefaNotFound();
+        }
+
+        $l->tarefas()->attach($rq->tarefa_id);
+        return response()->json([
+            'message' => 'Tarefa adicionada com sucesso'
         ], 200);
     }
 }
