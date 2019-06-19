@@ -51,4 +51,9 @@ class User extends Authenticatable
     {
         return $this->hasManyThrough('App\Tarefa', 'App\Quadro');
     }
+
+    public function listas()
+    {
+        return $this->hasManyThrough('App\Lista', 'App\Quadro');
+    }
 }
