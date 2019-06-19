@@ -10,22 +10,11 @@ use Illuminate\Validation\Rule;
 class APITarefaController extends Controller
 {
     use BuscarQuadroTrait;
+    use BuscarTarefaTrait;
 
     public function __construct()
     {
         $this->middleware('auth:api');
-    }
-
-    private function procurarTarefa(Request $rq, $id)
-    {
-        return $rq->user()->tarefas()->where('tarefas.id', $id)->first();
-    }
-
-    private function tarefaNotFound()
-    {
-        return response()->json([
-            'message' => 'Tarefa não encontrada'
-        ], 404);
     }
 
     public function listar(Request $rq, $quadro_id)
