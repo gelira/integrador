@@ -24,7 +24,8 @@ Route::prefix('user')->group(function () {
 
 Route::prefix('quadro')->group(function() {
     Route::get('all', 'APIQuadroController@all');
-    Route::get('{id}', 'APIQuadroController@getOne');
+    Route::get('{id}', 'APIQuadroController@getQuadro');
+    Route::get('{id}/tarefas', 'APIQuadroController@getTarefas');
     Route::post('', 'APIQuadroController@criar');
     Route::put('{id}', 'APIQuadroController@editar');
     Route::delete('{id}', 'APIQuadroController@deletar');

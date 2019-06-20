@@ -37,7 +37,7 @@ class APIQuadroController extends Controller
         ], 200);
     }
 
-    public function getOne(Request $rq, $id)
+    public function getQuadro(Request $rq, $id)
     {
         return response()->json([
             'quadro' => $this->getModelDB($rq, $id)
@@ -77,6 +77,13 @@ class APIQuadroController extends Controller
 
         return response()->json([
             'message' => 'Quadro deletado com sucesso'
+        ], 200);
+    }
+
+    public function getTarefas(Request $rq, $id)
+    {
+        return response()->json([
+            'tarefas' => $this->getModelDB($rq, $id)->tarefas
         ], 200);
     }
 }
