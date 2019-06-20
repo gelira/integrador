@@ -9,98 +9,81 @@ use Illuminate\Validation\Rule;
 
 class APITarefaController extends Controller
 {
-    use BuscarQuadroTrait;
-    use BuscarTarefaTrait;
+    use ModelNotFoundTrait;
+
+    private $modelName = 'Tarefa';
 
     public function __construct()
     {
         $this->middleware('auth:api');
     }
 
-    public function listar(Request $rq, $quadro_id)
+    private function getQuerySet(Request $rq)
     {
-        $q = $this->procurarQuadro($rq, $quadro_id);
-        if ($q == null)
-        {
-            return $this->quadroNotFound();
-        }
+        return $rq->user()->tarefas();
+    }
 
+    public function getTarefa(Request $rq, $id)
+    {
         return response()->json([
-            'message' => 'Lista de tarefas',
-            'tarefas' => $q->tarefas
+            'tarefa' => $this->getModelDB($rq, $id, 'tarefas.id')
         ], 200);
     }
 
-    public function criar(Request $rq, $quadro_id)
+    public function criar(Request $rq)
     {
         Validator::make($rq->all(), [
+            'quadro_id' => 'required|integer',
             'nome' => 'required|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 
-        $q = $this->procurarQuadro($rq, $quadro_id);
-        if ($q == null)
-        {
-            return $this->quadroNotFound();
-        }
-
-        $t = new Tarefa([
-            'nome' => $rq->nome,
-            'descricao' => $rq->descricao
-        ]);
-        $q->tarefas()->save($t);
+        $quadro = $this->getModelDB($rq, $rq->quadro_id,
+            'id', $rq->user()->quadros(), 'Quadro');
+        $tarefa = new Tarefa($rq->only(['nome', 'descricao']));
+        $quadro->tarefas()->save($tarefa);
 
         return response()->json([
             'message' => 'Tarefa criada com sucesso',
-            'tarefa' => $t
+            'tarefa' => $tarefa
         ], 200);
     }
 
-    public function atualizar(Request $rq, $id)
+    public function editar(Request $rq, $id)
     {
+        $tarefa = $this->getModelDB($rq, $id, 'tarefas.id');
+
         Validator::make($rq->all(), [
             'nome' => 'required|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 
-        $t = $this->procurarTarefa($rq, $id);
-        if ($t == null)
-        {
-            return $this->tarefaNotFound();
-        }
-
-        $t->fill([
-            'nome' => $rq->nome,
-            'descricao' => $rq->descricao
-        ])->save();
+        $tarefa->fill($rq->only(['nome', 'descricao']))->save();
         return response()->json([
-            'message' => 'Tarefa atualizada com sucesso',
-            'tarefa' => $t
+            'message' => 'Tarefa editada com sucesso',
+            'tarefa' => $tarefa
         ], 200);
     }
 
     public function anotacoes(Request $rq, $id)
     {
+        $tarefa = $this->getModelDB($rq, $id, 'tarefas.id');
+
         Validator::make($rq->all(), [
             'anotacoes' => 'nullable|string'
         ])->validate();
 
-        $t = $this->procurarTarefa($rq, $id);
-        if ($t == null)
-        {
-            return $this->tarefaNotFound();
-        }
-
-        $t->anotacoes = $rq->anotacoes;
-        $t->save();
+        $tarefa->forceFill($rq->only('anotacoes'))->save();
         return response()->json([
             'message' => 'Anotação inserida com sucesso',
-            'tarefa' => $t
+            'tarefa' => $tarefa
         ], 200);
     }
 
     public function status(Request $rq, $id)
     {
+        $tarefa = $this->getModelDB($rq, $id, 'tarefas.id');
+
         Validator::make($rq->all(), [
             'status' => [
                 'required',
@@ -108,29 +91,16 @@ class APITarefaController extends Controller
             ]
         ])->validate();
 
-        $t = $this->procurarTarefa($rq, $id);
-        if ($t == null)
-        {
-            return $this->tarefaNotFound();
-        }
-
-        $t->status = $rq->status;
-        $t->save();
+        $tarefa->forceFill($rq->only('status'))->save();
         return response()->json([
             'message' => 'Status atualizado com sucesso',
-            'tarefa' => $t
+            'tarefa' => $tarefa
         ], 200);
     }
 
     public function deletar(Request $rq, $id)
     {
-        $t = $this->procurarTarefa($rq, $id);
-        if ($t == null)
-        {
-            return $this->tarefaNotFound();
-        }
-
-        $t->delete();
+        $this->getModelDB($rq, $id, 'tarefas.id')->delete();
         return response()->json([
             'message' => 'Tarefa deletada com sucesso'
         ], 200);

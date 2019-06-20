@@ -32,12 +32,12 @@ Route::prefix('quadro')->group(function() {
 });
 
 Route::prefix('tarefa')->group(function () {
-    Route::get('listar/{quadro_id}', 'APITarefaController@listar');
-    Route::post('criar/{quadro_id}', 'APITarefaController@criar');
-    Route::post('atualizar/{id}', 'APITarefaController@atualizar');
-    Route::post('anotacoes/{id}', 'APITarefaController@anotacoes');
-    Route::post('status/{id}', 'APITarefaController@status');
-    Route::get('deletar/{id}', 'APITarefaController@deletar');
+    Route::get('{id}', 'APITarefaController@getTarefa');
+    Route::post('', 'APITarefaController@criar');
+    Route::put('{id}', 'APITarefaController@editar');
+    Route::patch('{id}/anotacoes', 'APITarefaController@anotacoes');
+    Route::patch('{id}/status', 'APITarefaController@status');
+    Route::delete('{id}', 'APITarefaController@deletar');
 });
 
 Route::prefix('lista')->group(function () {
