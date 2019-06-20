@@ -100,7 +100,9 @@ class APITarefaController extends Controller
 
     public function deletar(Request $rq, $id)
     {
-        $this->getModelDB($rq, $id, 'tarefas.id')->delete();
+        $tarefa = $this->getModelDB($rq, $id, 'tarefas.id');
+        $tarefa->listas()->detach();
+        $tarefa->delete();
         return response()->json([
             'message' => 'Tarefa deletada com sucesso'
         ], 200);
