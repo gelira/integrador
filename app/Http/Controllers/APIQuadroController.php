@@ -93,4 +93,12 @@ class APIQuadroController extends Controller
             'listas' => $this->getModelDB($rq, $id)->listas
         ], 200);
     }
+
+    public function getTarefasSemLista(Request $rq, $id)
+    {
+        return response()->json([
+            'tarefas' => $this->getModelDB($rq, $id)->tarefas()
+                ->whereDoesntHave('listas')->get()
+        ], 200);
+    }
 }
