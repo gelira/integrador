@@ -84,7 +84,9 @@ class APIListaController extends Controller
     public function addTarefa(Request $rq, $id)
     {
         Validator::make($rq->all(), [
-            'tarefa_id' => 'required|integer'
+            'tarefa_id' => 'required|integer|unique:lista_tarefa'
+        ], [
+            'unique' => 'Essa tarefa já está em uma lista'
         ])->validate();
 
         $l = $this->procurarLista($rq, $id);
