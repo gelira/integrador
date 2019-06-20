@@ -50,9 +50,4 @@ Route::prefix('lista')->group(function () {
     Route::post('{id}/add-tarefa', 'APIListaController@addTarefa');
     Route::delete('{id}/rm-tarefa/{tarefa_id}', 'APIListaController@rmTarefa');
     Route::delete('{id}', 'APIListaController@deletar');
-    /*Route::get('listar/{quadro_id}', 'APIListaController@listar');
-    Route::post('criar/{quadro_id}', 'APIListaController@criar');
-    Route::get('tarefas/{id}', 'APIListaController@listarTarefas');
-    Route::post('add-tarefa/{id}', 'APIListaController@addTarefa');
-    Route::post('rm-tarefa/{id}', 'APIListaController@rmTarefa');*/
 });
