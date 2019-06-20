@@ -8,119 +8,117 @@ use App\Lista;
 
 class APIListaController extends Controller
 {
-    use BuscarQuadroTrait;
-    use BuscarTarefaTrait;
+    use ModelNotFoundTrait;
+
+    private $modelName = 'Lista';
 
     public function __construct()
     {
         $this->middleware('auth:api');
     }
 
-    private function procurarLista(Request $rq, $id)
+    private function getQuerySet(Request $rq)
     {
-        return $rq->user()->listas()->where('listas.id', $id)->first();
+        return $rq->user()->listas();
     }
 
-    private function listaNotFound()
+    public function getLista(Request $rq, $id)
     {
         return response()->json([
-            'message' => 'Lista não encontrada'
-        ], 404);
-    }
-
-    public function listar(Request $rq, $quadro_id)
-    {
-        $q = $this->procurarQuadro($rq, $quadro_id);
-        if ($q == null)
-        {
-            return $this->quadroNotFound();
-        }
-
-        return response()->json([
-            'message' => 'Listas de atividades',
-            'listas' => $q->listas
+            'lista' => $this->getModelDB($rq, $id, 'listas.id')
         ], 200);
     }
 
-    public function criar(Request $rq, $quadro_id)
+    public function criar(Request $rq)
     {
+        Validator::make($rq->all(), [
+            'quadro_id' => 'required|integer',
+            'nome' => 'required|max:50',
+            'descricao' => 'nullable|string'
+        ])->validate();
+
+        $quadro = $this->getModelDB($rq, $rq->quadro_id,
+            'id', $rq->user()->quadros(), 'Quadro');
+        $lista = new Lista($rq->only(['nome', 'descricao']));
+        $quadro->listas()->save($lista);
+
+        return response()->json([
+            'message' => 'Lista criada com sucesso',
+            'lista' => $lista->refresh()
+        ], 200);
+    }
+
+    public function editar(Request $rq, $id)
+    {
+        $lista = $this->getModelDB($rq, $id, 'listas.id');
+
         Validator::make($rq->all(), [
             'nome' => 'required|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 
-        $q = $this->procurarQuadro($rq, $quadro_id);
-        if ($q == null)
-        {
-            return $this->quadroNotFound();
-        }
-
-        $l = new Lista([
-            'nome' => $rq->nome,
-            'descricao' => $rq->descricao
-        ]);
-        $q->listas()->save($l);
-
+        $lista->fill($rq->only(['nome', 'descricao']))->save();
         return response()->json([
-            'message' => 'Lista criada com sucesso',
-            'lista' => $l
+            'message' => 'Lista editada com sucesso',
+            'lista' => $lista
         ], 200);
     }
 
-    public function listarTarefas(Request $rq, $id)
+    public function tempoPomodoro(Request $rq, $id)
     {
-        $l = $this->procurarLista($rq, $id);
-        if ($l == null)
-        {
-            return $this->listaNotFound();
-        }
+        $lista = $this->getModelDB($rq, $id, 'listas.id');
 
+        Validator::make($rq->all(), [
+            'minutos_pomodoro' => 'required|integer|min:1',
+            'short_timebreak' => 'required|integer|min:1',
+            'long_timebreak' => 'required|integer|min:1'
+        ])->validate();
+
+        $lista->forceFill($rq->only([
+            'minutos_pomodoro', 'short_timebreak', 'long_timebreak'
+        ]))->save();
         return response()->json([
-            'message' => 'Tarefas da lista',
-            'tarefas' => $l->tarefas
+            'message' => 'Tempo definido com sucesso',
+            'lista' => $lista
         ], 200);
     }
 
     public function addTarefa(Request $rq, $id)
     {
+        $lista = $this->getModelDB($rq, $id, 'listas.id');
+
         Validator::make($rq->all(), [
             'tarefa_id' => 'required|integer|unique:lista_tarefa'
         ], [
             'unique' => 'Essa tarefa já está em uma lista'
         ])->validate();
 
-        $l = $this->procurarLista($rq, $id);
-        if ($l == null)
-        {
-            return $this->listaNotFound();
-        }
+        $t_id = $rq->tarefa_id;
+        $tarefa = $this->getModelDB($rq, $t_id,
+            'tarefas.id', $rq->user()->tarefas(), 'Tarefa');
+        $lista->tarefas()->attach($t_id);
 
-        if ($this->procurarTarefa($rq, $rq->tarefa_id) == null)
-        {
-            return $this->tarefaNotFound();
-        }
-
-        $l->tarefas()->attach($rq->tarefa_id);
         return response()->json([
-            'message' => 'Tarefa adicionada com sucesso'
+            'message' => 'Tarefa adicionada com sucesso',
+            'tarefa' => $tarefa
         ], 200);
     }
 
-    public function rmTarefa(Request $rq, $id)
+    public function rmTarefa(Request $rq, $id, $tarefa_id)
     {
-        Validator::make($rq->all(), [
-            'tarefa_id' => 'required|integer'
-        ])->validate();
-
-        $l = $this->procurarLista($rq, $id);
-        if ($l == null)
-        {
-            return $this->listaNotFound();
-        }
-
-        $numLinhas = $l->tarefas()->detach($rq->tarefa_id);
         return response()->json([
-            'linhas_afetadas' => $numLinhas
+            'linhas_afetadas' => $this->getModelDB($rq, $id, 'listas.id')
+                ->tarefas()->detach($tarefa_id)
+        ], 200);
+    }
+
+    public function deletar(Request $rq, $id)
+    {
+        $lista = $this->getModelDB($rq, $id, 'listas.id');
+        $lista->tarefas()->detach();
+        $lista->delete();
+        return response()->json([
+            'message' => 'Lista deletada com sucesso'
         ], 200);
     }
 }

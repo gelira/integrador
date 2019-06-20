@@ -42,9 +42,16 @@ Route::prefix('tarefa')->group(function () {
 });
 
 Route::prefix('lista')->group(function () {
-    Route::get('listar/{quadro_id}', 'APIListaController@listar');
+    Route::get('{id}', 'APIListaController@getLista');
+    Route::post('', 'APIListaController@criar');
+    Route::put('{id}', 'APIListaController@editar');
+    Route::put('{id}/pomodoro', 'APIListaController@tempoPomodoro');
+    Route::post('{id}/add-tarefa', 'APIListaController@addTarefa');
+    Route::delete('{id}/rm-tarefa/{tarefa_id}', 'APIListaController@rmTarefa');
+    Route::delete('{id}', 'APIListaController@deletar');
+    /*Route::get('listar/{quadro_id}', 'APIListaController@listar');
     Route::post('criar/{quadro_id}', 'APIListaController@criar');
     Route::get('tarefas/{id}', 'APIListaController@listarTarefas');
     Route::post('add-tarefa/{id}', 'APIListaController@addTarefa');
-    Route::post('rm-tarefa/{id}', 'APIListaController@rmTarefa');
+    Route::post('rm-tarefa/{id}', 'APIListaController@rmTarefa');*/
 });
