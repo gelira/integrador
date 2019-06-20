@@ -8,73 +8,73 @@ use Illuminate\Support\Facades\Validator;
 
 class APIQuadroController extends Controller
 {
-    use BuscarQuadroTrait;
+    use ModelNotFoundTrait;
+
+    private $modelName = 'Quadro';
 
     public function __construct()
     {
         $this->middleware('auth:api');
     }
 
-    public function listar(Request $rq)
+    private function getQuerySet(Request $rq)
     {
-        $u = $rq->user();
+        return $rq->user()->quadros();
+    }
+
+    private function validacaoPadrao($dados)
+    {
+        Validator::make($dados, [
+            'nome' => 'required|string|max:100',
+            'descricao' => 'nullable|string'
+        ])->validate();
+    }
+
+    public function all(Request $rq)
+    {
         return response()->json([
-            'message' => 'Lista de quadros',
-            'quadros' => $u->quadros
+            'quadros' => $rq->user()->quadros
+        ], 200);
+    }
+
+    public function getOne(Request $rq, $id)
+    {
+        return response()->json([
+            'quadro' => $this->getModelDB($rq, $id)
         ], 200);
     }
 
     public function criar(Request $rq)
     {
-        Validator::make($rq->all(), [
-            'nome' => 'required|string|max:100',
-            'descricao' => 'nullable|string'
-        ])->validate();
+        $this->validacaoPadrao($rq->all());
 
-        $q = new Quadro([
-            'nome' => $rq->nome,
-            'descricao' => $rq->descricao
-        ]);
-        $rq->user()->quadros()->save($q);
+        $quadro = new Quadro($rq->only(['nome', 'descricao']));
+        $rq->user()->quadros()->save($quadro);
 
         return response()->json([
             'message' => 'Quadro criado com sucesso',
-            'quadro' => $q
+            'quadro' => $quadro
         ], 200);
     }
 
-    public function atualizar(Request $rq, $id)
+    public function editar(Request $rq, $id)
     {
-        Validator::make($rq->all(), [
-            'nome' => 'required|string|max:100',
-            'descricao' => 'nullable|string'
-        ])->validate();
+        $quadro = $this->getModelDB($rq, $id);
 
-        $q = $this->procurarQuadro($rq, $id);
-        if ($q == null)
-        {
-            return $this->quadroNotFound();
-        }
+        $this->validacaoPadrao($rq->all());
 
-        $q->fill([
-            'nome' => $rq->nome,
-            'descricao' => $rq->descricao
-        ])->save();
+        $quadro->fill($rq->only(['nome', 'descricao']))->save();
+
         return response()->json([
-            'message' => 'Quadro atualizado com sucesso',
-            'quadro' => $q
+            'message' => 'Quadro editado com sucesso',
+            'quadro' => $quadro
         ], 200);
     }
 
     public function deletar(Request $rq, $id)
     {
-        $q = $this->procurarQuadro($rq, $id);
-        if ($q == null)
-        {
-            return $this->quadroNotFound();
-        }
+        $this->getModelDB($rq, $id)->delete();
 
-        $q->delete();
         return response()->json([
             'message' => 'Quadro deletado com sucesso'
         ], 200);

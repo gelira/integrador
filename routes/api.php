@@ -23,10 +23,11 @@ Route::prefix('user')->group(function () {
 });
 
 Route::prefix('quadro')->group(function() {
-    Route::get('listar', 'APIQuadroController@listar');
-    Route::post('criar', 'APIQuadroController@criar');
-    Route::post('atualizar/{id}', 'APIQuadroController@atualizar');
-    Route::get('deletar/{id}', 'APIQuadroController@deletar');
+    Route::get('all', 'APIQuadroController@all');
+    Route::get('{id}', 'APIQuadroController@getOne');
+    Route::post('', 'APIQuadroController@criar');
+    Route::put('{id}', 'APIQuadroController@editar');
+    Route::delete('{id}', 'APIQuadroController@deletar');
 });
 
 Route::prefix('tarefa')->group(function () {
