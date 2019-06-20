@@ -105,4 +105,22 @@ class APIListaController extends Controller
             'message' => 'Tarefa adicionada com sucesso'
         ], 200);
     }
+
+    public function rmTarefa(Request $rq, $id)
+    {
+        Validator::make($rq->all(), [
+            'tarefa_id' => 'required|integer'
+        ])->validate();
+
+        $l = $this->procurarLista($rq, $id);
+        if ($l == null)
+        {
+            return $this->listaNotFound();
+        }
+
+        $numLinhas = $l->tarefas()->detach($rq->tarefa_id);
+        return response()->json([
+            'linhas_afetadas' => $numLinhas
+        ], 200);
+    }
 }

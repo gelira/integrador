@@ -43,4 +43,5 @@ Route::prefix('lista')->group(function () {
     Route::post('criar/{quadro_id}', 'APIListaController@criar');
     Route::get('tarefas/{id}', 'APIListaController@listarTarefas');
     Route::post('add-tarefa/{id}', 'APIListaController@addTarefa');
+    Route::post('rm-tarefa/{id}', 'APIListaController@rmTarefa');
 });
