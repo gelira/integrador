@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 trait ModelNotFoundTrait
 {
-    private function getModelDB(Request $rq, $id, $idName = 'id', $qs = null)
+    private function getModelDB(Request $rq, $id, $idName = 'id', $qs = null, $model = null)
     {
         try
         {
@@ -20,7 +20,11 @@ trait ModelNotFoundTrait
 
         catch (ModelNotFoundException $ex)
         {
-            $ex->setModel($this->modelName);
+            if ($model == null)
+            {
+                $model = $this->modelName;
+            }
+            $ex->setModel($model);
             throw $ex;
         }
     }
