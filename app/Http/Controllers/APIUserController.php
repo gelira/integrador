@@ -19,14 +19,18 @@ class APIUserController extends Controller
             'senha' => 'required|min:8'
         ])->validate();
 
-        User::create([
+        $token = Str::random(60);
+        $user = User::create([
             'name' => $rq->nome,
             'email' => $rq->email,
-            'password' => Hash::make($rq->senha)
+            'password' => Hash::make($rq->senha),
+            'api_token' => hash('sha256', $token)
         ]);
 
         return response()->json([
-            'message' => 'Usuário criado com sucesso'
+            'message' => 'Usuário criado com sucesso',
+            'user' => $user,
+            'token' => $token
         ], 200);
     }
 
@@ -41,7 +45,7 @@ class APIUserController extends Controller
         {
             $token = Str::random(60);
 
-            Auth::user()->forceFill([
+            Auth::user()->fill([
                 'api_token' => hash('sha256', $token)
             ])->save();
 
