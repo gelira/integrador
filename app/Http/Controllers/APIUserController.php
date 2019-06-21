@@ -11,6 +11,11 @@ use Illuminate\Support\Str;
 
 class APIUserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api')->except('cadastrar', 'gerarToken');
+    }
+
     public function cadastrar(Request $rq)
     {
         Validator::make($rq->all(), [

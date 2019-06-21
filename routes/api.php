@@ -20,9 +20,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::prefix('user')->group(function () {
     Route::post('cadastrar', 'APIUserController@cadastrar');
     Route::post('gerar-token', 'APIUserController@gerarToken');
-    Route::middleware('auth:api')->group(function () {
-        Route::put('nova-senha', 'APIUserController@novaSenha');
-    });
+    Route::put('nova-senha', 'APIUserController@novaSenha');
 });
 
 Route::prefix('quadro')->group(function() {
