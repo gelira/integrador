@@ -58,4 +58,24 @@ class APIUserController extends Controller
             'message' => 'Credenciais inválidas'
         ], 401);
     }
+
+    public function novaSenha(Request $rq)
+    {
+        Validator::make($rq->all(), [
+            'senha_atual' => 'required',
+            'senha_nova' => 'required|min:8'
+        ])->validate();
+
+        $user = $rq->user();
+        if (Hash::check($rq->senha_atual, $user->password))
+        {
+            $user->fill(['password' => Hash::make($rq->senha_nova)])->save();
+            return response()->json([
+                'message' => 'Senha alterada com sucesso'
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Senha atual incorreta'
+        ], 401);
+    }
 }
