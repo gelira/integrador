@@ -20,9 +20,9 @@ class APIUserController extends Controller
     public function cadastrar(Request $rq)
     {
         Validator::make($rq->all(), [
-            'nome' => 'required|max:200',
+            'nome' => 'required|string|max:200',
             'email' => 'required|email|unique:users',
-            'senha' => 'required|min:8'
+            'senha' => 'required|string|min:8'
         ])->validate();
 
         $token = Str::random(60);
@@ -44,7 +44,7 @@ class APIUserController extends Controller
     {
         Validator::make($rq->all(), [
             'email' => 'required|email',
-            'senha' => 'required'
+            'senha' => 'required|string'
         ])->validate();
 
         if (Auth::attempt(['email' => $rq->email, 'password' => $rq->senha]))
@@ -77,8 +77,8 @@ class APIUserController extends Controller
     public function novaSenha(Request $rq)
     {
         Validator::make($rq->all(), [
-            'senha_atual' => 'required',
-            'senha_nova' => 'required|min:8'
+            'senha_atual' => 'required|string',
+            'senha_nova' => 'required|string|min:8'
         ])->validate();
 
         $user = $rq->user();
