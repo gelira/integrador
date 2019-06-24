@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'api_token'
+        'name', 'email', 'password', 'api_token', 'foto'
     ];
 
     /**
@@ -36,6 +36,20 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected $attributes = [
+        'fotos' => 'fotos/default.png'
+    ];
+
+    public function fotoPadrao()
+    {
+        return $this->foto == $this->getFotoPadrao();
+    }
+
+    public function getFotoPadrao()
+    {
+        return 'foto/default.png';
+    }
 
     public function quadros()
     {

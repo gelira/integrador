@@ -8,6 +8,7 @@ use App\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class APIUserController extends Controller
 {
@@ -64,6 +65,15 @@ class APIUserController extends Controller
         ], 401);
     }
 
+    public function getDados(Request $rq)
+    {
+        $user = $rq->user();
+        $user->foto = '/storage/' . $user->foto;
+        return response()->json([
+            'user' => $user
+        ], 200);
+    }
+
     public function novaSenha(Request $rq)
     {
         Validator::make($rq->all(), [
@@ -82,5 +92,41 @@ class APIUserController extends Controller
         return response()->json([
             'message' => 'Senha atual incorreta'
         ], 401);
+    }
+
+    public function atualizarFoto(Request $rq)
+    {
+        Validator::make($rq->all(), [
+            'foto' => 'required|mimes:png,jpg,jpeg|max:2048'
+        ])->validate();
+
+        $user = $rq->user();
+        if (!$user->fotoPadrao())
+        {
+            Storage::disk('public')->delete($user->foto);
+        }
+
+        $path = $rq->file('foto')->store('fotos', 'public');
+        $user->fill(['foto' => $path])->save();
+        return response()->json([
+            'message' => 'Foto atualizada com sucesso',
+            'url' => '/storage/' . $path
+        ], 200);
+    }
+
+    public function deletarFoto(Request $rq)
+    {
+        $user = $rq->user();
+        if (!$user->fotoPadrao())
+        {
+            Storage::disk('public')->delete($user->foto);
+            $user->foto = $user->getFotoPadrao();
+            $user->save();
+        }
+
+        return response()->json([
+            'message' => 'Foto deletada com sucesso',
+            'url' => '/storage/' . $user->foto,
+        ], 200);
     }
 }
