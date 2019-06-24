@@ -34,7 +34,7 @@ class APITarefaController extends Controller
     {
         Validator::make($rq->all(), [
             'quadro_id' => 'required|integer',
-            'nome' => 'required|max:50',
+            'nome' => 'required|string|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 
@@ -54,7 +54,7 @@ class APITarefaController extends Controller
         $tarefa = $this->getModelDB($rq, $id, 'tarefas.id');
 
         Validator::make($rq->all(), [
-            'nome' => 'required|max:50',
+            'nome' => 'required|string|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 

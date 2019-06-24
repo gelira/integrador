@@ -33,7 +33,7 @@ class APIListaController extends Controller
     {
         Validator::make($rq->all(), [
             'quadro_id' => 'required|integer',
-            'nome' => 'required|max:50',
+            'nome' => 'required|string|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 
@@ -53,7 +53,7 @@ class APIListaController extends Controller
         $lista = $this->getModelDB($rq, $id, 'listas.id');
 
         Validator::make($rq->all(), [
-            'nome' => 'required|max:50',
+            'nome' => 'required|string|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 
