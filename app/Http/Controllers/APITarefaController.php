@@ -42,6 +42,8 @@ class APITarefaController extends Controller
             'id', $rq->user()->quadros(), 'Quadro');
         $tarefa = new Tarefa($rq->only(['nome', 'descricao']));
         $quadro->tarefas()->save($tarefa);
+        $rq->user()->registrarLog('Criada a tarefa ' . $tarefa->nome . ' - id ' . $tarefa->id .
+            ' no quadro ' . $quadro->nome . ' - id ' . $quadro->id);
 
         return response()->json([
             'message' => 'Tarefa criada com sucesso',
@@ -59,6 +61,8 @@ class APITarefaController extends Controller
         ])->validate();
 
         $tarefa->fill($rq->only(['nome', 'descricao']))->save();
+        $rq->user()->registrarLog('Editada a tarefa ' . $tarefa->nome . ' - id ' . $tarefa->id);
+
         return response()->json([
             'message' => 'Tarefa editada com sucesso',
             'tarefa' => $tarefa
@@ -74,6 +78,8 @@ class APITarefaController extends Controller
         ])->validate();
 
         $tarefa->forceFill($rq->only('anotacoes'))->save();
+        $rq->user()->registrarLog('Anotações na tarefa ' . $tarefa->nome . ' - id ' . $tarefa->id);
+
         return response()->json([
             'message' => 'Anotação inserida com sucesso',
             'tarefa' => $tarefa
@@ -92,6 +98,8 @@ class APITarefaController extends Controller
         ])->validate();
 
         $tarefa->forceFill($rq->only('status'))->save();
+        $rq->user()->registrarLog('Status da tarefa ' . $tarefa->nome . ' - id ' . $tarefa->id);
+
         return response()->json([
             'message' => 'Status atualizado com sucesso',
             'tarefa' => $tarefa
@@ -103,6 +111,8 @@ class APITarefaController extends Controller
         $tarefa = $this->getModelDB($rq, $id, 'tarefas.id');
         $tarefa->listas()->detach();
         $tarefa->delete();
+        $rq->user()->registrarLog('Deletada a tarefa ' . $tarefa->nome . ' - id ' . $tarefa->id);
+
         return response()->json([
             'message' => 'Tarefa deletada com sucesso'
         ], 200);

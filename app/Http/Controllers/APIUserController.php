@@ -33,6 +33,7 @@ class APIUserController extends Controller
             'api_token' => hash('sha256', $token)
         ]);
 
+        $user->registrarLog('Cadastro no sistema');
         return response()->json([
             'message' => 'Usuário criado com sucesso',
             'user' => $user,
@@ -49,11 +50,13 @@ class APIUserController extends Controller
 
         if (Auth::attempt(['email' => $rq->email, 'password' => $rq->senha]))
         {
+            $user = Auth::user();
             $token = Str::random(60);
 
-            Auth::user()->fill([
+            $user->fill([
                 'api_token' => hash('sha256', $token)
             ])->save();
+            $user->registrarLog('Token de acesso gerado');
 
             return response()->json([
                 'token' => $token
@@ -85,10 +88,13 @@ class APIUserController extends Controller
         if (Hash::check($rq->senha_atual, $user->password))
         {
             $user->fill(['password' => Hash::make($rq->senha_nova)])->save();
+            $user->registrarLog('Senha alterada com sucesso');
             return response()->json([
-                'message' => 'Senha alterada com sucesso'
+                'message' => 'Senha alterada'
             ], 200);
         }
+
+        $user->registrarLog('Tentativa falha de alteração de senha');
         return response()->json([
             'message' => 'Senha atual incorreta'
         ], 401);
@@ -108,6 +114,8 @@ class APIUserController extends Controller
 
         $path = $rq->file('foto')->store('fotos', 'public');
         $user->fill(['foto' => $path])->save();
+        $user->registrarLog('Foto atualizada');
+
         return response()->json([
             'message' => 'Foto atualizada com sucesso',
             'url' => '/storage/' . $path
@@ -122,6 +130,7 @@ class APIUserController extends Controller
             Storage::disk('public')->delete($user->foto);
             $user->foto = $user->getFotoPadrao();
             $user->save();
+            $user->registrarLog('Foto deletada');
         }
 
         return response()->json([
