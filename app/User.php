@@ -51,6 +51,11 @@ class User extends Authenticatable
         return 'foto/default.png';
     }
 
+    public function registrarLog($log)
+    {
+        $this->logs()->save(new Log(['log' => $log]));
+    }
+
     public function quadros()
     {
         return $this->hasMany('App\Quadro');
