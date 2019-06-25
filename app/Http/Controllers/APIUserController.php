@@ -138,4 +138,14 @@ class APIUserController extends Controller
             'url' => '/storage/' . $user->foto,
         ], 200);
     }
+
+    public function getLog(Request $rq, $limit = 100)
+    {
+        $user = $rq->user();
+        $logs = $user->logs()->select(['log', 'created_at'])->limit($limit)->get();
+
+        return response()->json([
+            'logs' => $logs
+        ], 200);
+    }
 }

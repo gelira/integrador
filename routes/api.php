@@ -24,6 +24,7 @@ Route::prefix('user')->group(function () {
     Route::put('nova-senha', 'APIUserController@novaSenha');
     Route::post('foto', 'APIUserController@atualizarFoto');
     Route::delete('foto', 'APIUserController@deletarFoto');
+    Route::get('log/{limit?}', 'APIUserController@getLog')->where('limit', '[0-9]+');
 });
 
 Route::prefix('quadro')->group(function() {
