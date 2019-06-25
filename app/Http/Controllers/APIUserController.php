@@ -8,6 +8,7 @@ use App\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class APIUserController extends Controller
 {
@@ -19,9 +20,9 @@ class APIUserController extends Controller
     public function cadastrar(Request $rq)
     {
         Validator::make($rq->all(), [
-            'nome' => 'required|max:200',
+            'nome' => 'required|string|max:200',
             'email' => 'required|email|unique:users',
-            'senha' => 'required|min:8'
+            'senha' => 'required|string|min:8'
         ])->validate();
 
         $token = Str::random(60);
@@ -32,6 +33,7 @@ class APIUserController extends Controller
             'api_token' => hash('sha256', $token)
         ]);
 
+        $user->registrarLog('Cadastro no sistema');
         return response()->json([
             'message' => 'Usuário criado com sucesso',
             'user' => $user,
@@ -43,16 +45,18 @@ class APIUserController extends Controller
     {
         Validator::make($rq->all(), [
             'email' => 'required|email',
-            'senha' => 'required'
+            'senha' => 'required|string'
         ])->validate();
 
         if (Auth::attempt(['email' => $rq->email, 'password' => $rq->senha]))
         {
+            $user = Auth::user();
             $token = Str::random(60);
 
-            Auth::user()->fill([
+            $user->fill([
                 'api_token' => hash('sha256', $token)
             ])->save();
+            $user->registrarLog('Token de acesso gerado');
 
             return response()->json([
                 'token' => $token
@@ -64,23 +68,84 @@ class APIUserController extends Controller
         ], 401);
     }
 
+    public function getDados(Request $rq)
+    {
+        $user = $rq->user();
+        $user->foto = '/storage/' . $user->foto;
+        return response()->json([
+            'user' => $user
+        ], 200);
+    }
+
     public function novaSenha(Request $rq)
     {
         Validator::make($rq->all(), [
-            'senha_atual' => 'required',
-            'senha_nova' => 'required|min:8'
+            'senha_atual' => 'required|string',
+            'senha_nova' => 'required|string|min:8'
         ])->validate();
 
         $user = $rq->user();
         if (Hash::check($rq->senha_atual, $user->password))
         {
             $user->fill(['password' => Hash::make($rq->senha_nova)])->save();
+            $user->registrarLog('Senha alterada com sucesso');
             return response()->json([
-                'message' => 'Senha alterada com sucesso'
+                'message' => 'Senha alterada'
             ], 200);
         }
+
+        $user->registrarLog('Tentativa falha de alteração de senha');
         return response()->json([
             'message' => 'Senha atual incorreta'
         ], 401);
+    }
+
+    public function atualizarFoto(Request $rq)
+    {
+        Validator::make($rq->all(), [
+            'foto' => 'required|mimes:png,jpg,jpeg|max:2048'
+        ])->validate();
+
+        $user = $rq->user();
+        if (!$user->fotoPadrao())
+        {
+            Storage::disk('public')->delete($user->foto);
+        }
+
+        $path = $rq->file('foto')->store('fotos', 'public');
+        $user->fill(['foto' => $path])->save();
+        $user->registrarLog('Foto atualizada');
+
+        return response()->json([
+            'message' => 'Foto atualizada com sucesso',
+            'url' => '/storage/' . $path
+        ], 200);
+    }
+
+    public function deletarFoto(Request $rq)
+    {
+        $user = $rq->user();
+        if (!$user->fotoPadrao())
+        {
+            Storage::disk('public')->delete($user->foto);
+            $user->foto = $user->getFotoPadrao();
+            $user->save();
+            $user->registrarLog('Foto deletada');
+        }
+
+        return response()->json([
+            'message' => 'Foto deletada com sucesso',
+            'url' => '/storage/' . $user->foto,
+        ], 200);
+    }
+
+    public function getLog(Request $rq, $limit = 100)
+    {
+        $user = $rq->user();
+        $logs = $user->logs()->select(['log', 'created_at'])->limit($limit)->get();
+
+        return response()->json([
+            'logs' => $logs
+        ], 200);
     }
 }

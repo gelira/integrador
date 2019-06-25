@@ -18,9 +18,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::prefix('user')->group(function () {
+    Route::get('', 'APIUserController@getDados');
     Route::post('cadastrar', 'APIUserController@cadastrar');
     Route::post('gerar-token', 'APIUserController@gerarToken');
     Route::put('nova-senha', 'APIUserController@novaSenha');
+    Route::post('foto', 'APIUserController@atualizarFoto');
+    Route::delete('foto', 'APIUserController@deletarFoto');
+    Route::get('log/{limit?}', 'APIUserController@getLog')->where('limit', '[0-9]+');
 });
 
 Route::prefix('quadro')->group(function() {
@@ -49,6 +53,7 @@ Route::prefix('lista')->group(function () {
     Route::post('', 'APIListaController@criar');
     Route::put('{id}', 'APIListaController@editar');
     Route::put('{id}/pomodoro', 'APIListaController@tempoPomodoro');
+    Route::get('{id}/tarefas', 'APIListaController@getTarefas');
     Route::post('{id}/add-tarefa', 'APIListaController@addTarefa');
     Route::delete('{id}/rm-tarefa/{tarefa_id}', 'APIListaController@rmTarefa');
     Route::delete('{id}', 'APIListaController@deletar');

@@ -40,7 +40,7 @@ class APIListaController extends Controller
     {
         Validator::make($rq->all(), [
             'quadro_id' => 'required|integer',
-            'nome' => 'required|max:50',
+            'nome' => 'required|string|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 
@@ -48,6 +48,8 @@ class APIListaController extends Controller
             'id', $rq->user()->quadros(), 'Quadro');
         $lista = new Lista($rq->only(['nome', 'descricao']));
         $quadro->listas()->save($lista);
+        $rq->user()->registrarLog('Criada lista de atividades ' . $lista->nome . ' - id ' . $lista->id .
+            ' no quadro ' . $quadro->nome . ' - id ' . $quadro->id);
 
         return response()->json([
             'message' => 'Lista criada com sucesso',
@@ -60,11 +62,13 @@ class APIListaController extends Controller
         $lista = $this->getModelDB($rq, $id, 'listas.id');
 
         Validator::make($rq->all(), [
-            'nome' => 'required|max:50',
+            'nome' => 'required|string|max:50',
             'descricao' => 'nullable|string'
         ])->validate();
 
         $lista->fill($rq->only(['nome', 'descricao']))->save();
+        $rq->user()->registrarLog('Editada a lista ' . $lista->nome . ' - id ' . $lista->id);
+
         return response()->json([
             'message' => 'Lista editada com sucesso',
             'lista' => $lista
@@ -84,9 +88,18 @@ class APIListaController extends Controller
         $lista->forceFill($rq->only([
             'minutos_pomodoro', 'short_timebreak', 'long_timebreak'
         ]))->save();
+        $rq->user()->registrarLog('Editada o tempo de pomodoro da lista ' . $lista->nome . ' - id ' . $lista->id);
+
         return response()->json([
             'message' => 'Tempo definido com sucesso',
             'lista' => $lista
+        ], 200);
+    }
+
+    public function getTarefas(Request $rq, $id)
+    {
+        return response()->json([
+            'tarefas' => $this->getModelDB($rq, $id, 'listas.id')->tarefas
         ], 200);
     }
 
@@ -104,6 +117,8 @@ class APIListaController extends Controller
         $tarefa = $this->getModelDB($rq, $t_id,
             'tarefas.id', $rq->user()->tarefas(), 'Tarefa');
         $lista->tarefas()->attach($t_id);
+        $rq->user()->registrarLog('Adicionada a tarefa ' . $tarefa->nome . ' - id ' . $tarefa->id .
+            ' na lista ' . $lista->nome . ' - id ' . $lista->id);
 
         return response()->json([
             'message' => 'Tarefa adicionada com sucesso',
@@ -113,9 +128,12 @@ class APIListaController extends Controller
 
     public function rmTarefa(Request $rq, $id, $tarefa_id)
     {
+        $lista = $this->getModelDB($rq, $id, 'listas.id');
+        $rq->user()->registrarLog('Adicionada a tarefa de id ' . $tarefa_id .
+            ' na lista ' . $lista->nome . ' - id ' . $lista->id);
+
         return response()->json([
-            'linhas_afetadas' => $this->getModelDB($rq, $id, 'listas.id')
-                ->tarefas()->detach($tarefa_id)
+            'linhas_afetadas' => $lista->tarefas()->detach($tarefa_id)
         ], 200);
     }
 
@@ -124,6 +142,8 @@ class APIListaController extends Controller
         $lista = $this->getModelDB($rq, $id, 'listas.id');
         $lista->tarefas()->detach();
         $lista->delete();
+        $rq->user()->registrarLog('Deletada a lista ' . $lista->nome . ' - id ' . $lista->id);
+
         return response()->json([
             'message' => 'Lista deletada com sucesso'
         ], 200);

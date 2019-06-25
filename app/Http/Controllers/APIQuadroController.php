@@ -48,8 +48,10 @@ class APIQuadroController extends Controller
     {
         $this->validacaoPadrao($rq->all());
 
+        $user = $rq->user();
         $quadro = new Quadro($rq->only(['nome', 'descricao']));
-        $rq->user()->quadros()->save($quadro);
+        $user->quadros()->save($quadro);
+        $user->registrarLog('Criado o quadro ' . $quadro->nome . ' - id ' . $quadro->id);
 
         return response()->json([
             'message' => 'Quadro criado com sucesso',
@@ -64,6 +66,7 @@ class APIQuadroController extends Controller
         $this->validacaoPadrao($rq->all());
 
         $quadro->fill($rq->only(['nome', 'descricao']))->save();
+        $rq->user()->registrarLog('Editado o quadro ' . $quadro->nome . ' - id ' . $quadro->id);
 
         return response()->json([
             'message' => 'Quadro editado com sucesso',
@@ -73,7 +76,9 @@ class APIQuadroController extends Controller
 
     public function deletar(Request $rq, $id)
     {
-        $this->getModelDB($rq, $id)->delete();
+        $quadro = $this->getModelDB($rq, $id);
+        $quadro->delete();
+        $rq->user()->registrarLog('Deletado o quadro ' . $quadro->nome . ' - id ' . $quadro->id);
 
         return response()->json([
             'message' => 'Quadro deletado com sucesso'
