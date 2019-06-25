@@ -22,6 +22,13 @@ class APIListaController extends Controller
         return $rq->user()->listas();
     }
 
+    public function all(Request $rq)
+    {
+        return response()->json([
+            'listas' => $rq->user()->listas
+        ], 200);
+    }
+
     public function getLista(Request $rq, $id)
     {
         return response()->json([
