@@ -44,6 +44,7 @@ Route::prefix('tarefa')->group(function () {
 });
 
 Route::prefix('lista')->group(function () {
+    Route::get('all', 'ApiListaController@all');
     Route::get('{id}', 'APIListaController@getLista');
     Route::post('', 'APIListaController@criar');
     Route::put('{id}', 'APIListaController@editar');
