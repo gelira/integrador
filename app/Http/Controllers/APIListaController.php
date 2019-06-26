@@ -80,9 +80,9 @@ class APIListaController extends Controller
         $lista = $this->getModelDB($rq, $id, 'listas.id');
 
         Validator::make($rq->all(), [
-            'minutos_pomodoro' => 'required|integer|min:1',
-            'short_timebreak' => 'required|integer|min:1',
-            'long_timebreak' => 'required|integer|min:1'
+            'minutos_pomodoro' => 'nullable|integer|min:1',
+            'short_timebreak' => 'nullable|integer|min:1',
+            'long_timebreak' => 'nullable|integer|min:1'
         ])->validate();
 
         $lista->forceFill($rq->only([
