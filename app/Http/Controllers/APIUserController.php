@@ -22,7 +22,7 @@ class APIUserController extends Controller
         Validator::make($rq->all(), [
             'nome' => 'required|string|max:200',
             'email' => 'required|email|unique:users',
-            'senha' => 'required|string|min:8'
+            'senha' => 'required|string|min:8',
         ])->validate();
 
         $token = Str::random(60);
@@ -32,7 +32,7 @@ class APIUserController extends Controller
             'password' => Hash::make($rq->senha),
             'api_token' => hash('sha256', $token)
         ]);
-
+        
         $user->registrarLog('Cadastro no sistema');
         return response()->json([
             'message' => 'Usuário criado com sucesso',
