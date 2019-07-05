@@ -38,7 +38,7 @@ class User extends Authenticatable
     ];
 
     protected $attributes = [
-        'fotos' => 'fotos/default.png'
+        'foto' => 'fotos/default.png'
     ];
 
     public function fotoPadrao()
